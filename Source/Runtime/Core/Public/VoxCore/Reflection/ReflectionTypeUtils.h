@@ -14,7 +14,7 @@
 #include "VoxCore/Reflection/Flags.h"
 #include "VoxCore/Reflection/Info.h"
 
-namespace voxcore::reflection::detail {
+namespace VoxCore::Reflection::Core {
     template <typename T>
     using TDecay = std::remove_cv_t<std::remove_reference_t<T>>;
 

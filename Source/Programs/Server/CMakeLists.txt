@@ -1,5 +1,3 @@
-# Source/Programs/Server/CMakeLists.txt
-# Headless сервер — НЕТ Platform, НЕТ Renderer, НЕТ SDL, НЕТ Vulkan
 
 add_executable(VoxelServer main.cpp)
 

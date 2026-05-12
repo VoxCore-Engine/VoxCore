@@ -2,7 +2,8 @@
 
 #include "VoxCore/Reflection/ObjectMacros.h"
 #include "VoxCore/Reflection/UClass.h"
-#include "VoxCore/GameFramework/UObject.generated.h"
+
+#include "UObject.generated.h"
 
 UCLASS()
 class UObject {

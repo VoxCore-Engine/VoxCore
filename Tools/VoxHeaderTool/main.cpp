@@ -394,7 +394,7 @@ void WriteTextFile(const fs::path& path, const std::string& content) {
     FHeaderUnit unit;
     unit.InputPath = inputPath;
     unit.RelativePath = fs::relative(inputPath, root);
-    unit.OutputPath = outputRoot / unit.RelativePath.parent_path() / (unit.RelativePath.stem().string() + ".generated.h");
+    unit.OutputPath = outputRoot / (unit.RelativePath.stem().string() + ".generated.h");
     unit.IncludePath = unit.RelativePath.generic_string();
     unit.FileId = MakeFileId(arguments.ModuleName, (visibility == EHeaderVisibility::Public ? fs::path("Public") : fs::path("Private")) / unit.RelativePath);
     unit.Visibility = visibility;
@@ -612,7 +612,7 @@ void AppendPropertyInitializers(std::ostringstream& output, const FClassDeclarat
     output << "    outClass.Properties = {\n";
     for (std::size_t index = 0; index < declaration.Properties.size(); ++index) {
         const auto& property = declaration.Properties[index];
-        output << "        voxcore::reflection::detail::MakePropertyInfo<&" << declaration.Name << "::" << property.Name << ">(\"" << property.Name << "\", " << property.Flags << ")";
+        output << "        VoxCore::Reflection::Core::MakePropertyInfo<&" << declaration.Name << "::" << property.Name << ">(\"" << property.Name << "\", " << property.Flags << ")";
         output << (index + 1 < declaration.Properties.size() ? ",\n" : "\n");
     }
     output << "    };\n";
@@ -627,7 +627,7 @@ void AppendFunctionInitializers(std::ostringstream& output, const FClassDeclarat
     output << "    outClass.Functions = {\n";
     for (std::size_t index = 0; index < declaration.Functions.size(); ++index) {
         const auto& function = declaration.Functions[index];
-        output << "        voxcore::reflection::detail::MakeFunctionInfo<&" << declaration.Name << "::" << function.Name << ">(\"" << function.Name << "\", " << function.Flags << ")";
+        output << "        VoxCore::Reflection::Core::MakeFunctionInfo<&" << declaration.Name << "::" << function.Name << ">(\"" << function.Name << "\", " << function.Flags << ")";
         output << (index + 1 < declaration.Functions.size() ? ",\n" : "\n");
     }
     output << "    };\n";
