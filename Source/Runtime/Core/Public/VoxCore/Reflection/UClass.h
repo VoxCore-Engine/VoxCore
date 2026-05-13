@@ -4,9 +4,7 @@
 #include <functional>
 #include <type_traits>
 
-#include "VoxCore/Core/Types/FString.h"
-#include "VoxCore/Core/Types/TArray.h"
-#include "VoxCore/Memory/Pointers.h"
+#include "VoxCore/CoreMinimal.h"
 #include "VoxCore/Reflection/Info.h"
 
 class UObject;

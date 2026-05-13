@@ -15,9 +15,9 @@ endif()
 if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
     message(STATUS "[CPM] Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
     file(DOWNLOAD
-        https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
-        ${CPM_DOWNLOAD_LOCATION}
-        EXPECTED_HASH SHA256=${CPM_HASH_SUM}
+            https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
+            ${CPM_DOWNLOAD_LOCATION}
+            EXPECTED_HASH SHA256=${CPM_HASH_SUM}
     )
 endif()
 

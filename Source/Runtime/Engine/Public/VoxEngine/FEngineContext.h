@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoxCore/CoreMinimal.h"
 #include "VoxEngine/Reflection/FReflectionRegistry.h"
 
 class FEngineContext {

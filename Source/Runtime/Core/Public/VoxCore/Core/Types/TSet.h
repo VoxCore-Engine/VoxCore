@@ -1,12 +1,9 @@
-//
-// Created by IDKTHIS on 10.05.2026.
-//
-
 #pragma once
+
 #include <functional>
 #include <unordered_set>
 
-#include "Common.h"
+#include "VoxCore/Core/Types/Common.h"
 
 template <
     typename ElementType,

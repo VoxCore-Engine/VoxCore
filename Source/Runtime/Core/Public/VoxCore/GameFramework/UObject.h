@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoxCore/CoreMinimal.h"
 #include "VoxCore/Reflection/ObjectMacros.h"
 #include "VoxCore/Reflection/UClass.h"
 

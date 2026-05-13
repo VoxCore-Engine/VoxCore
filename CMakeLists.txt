@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.31)
 project(VoxCore VERSION 0.0.1
         DESCRIPTION "VoxCore voxel game engine"
         LANGUAGES CXX
@@ -7,6 +7,7 @@ project(VoxCore VERSION 0.0.1
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CPM_SOURCE_CACHE "$ENV{HOME}/.cache/cpm" CACHE PATH "")
 
 option(VOXCORE_BUILD_CLIENT   "Build the graphical client"  ON)
@@ -31,7 +32,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-include(cmake/CPM.cmake)
+
 include(cmake/Dependencies.cmake)
 include(cmake/VoxReflection.cmake)
 

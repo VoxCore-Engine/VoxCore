@@ -1,9 +1,11 @@
 #pragma once
-#include "Common.h"
+
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <utility>
+
+#include "VoxCore/Core/Types/Common.h"
 
 class FString {
 public:
@@ -40,6 +42,10 @@ public:
     [[nodiscard]] char& operator[](SizeType index) noexcept { return m_Value[index]; }
     [[nodiscard]] const char& operator[](SizeType index) const noexcept { return m_Value[index]; }
 
+    [[nodiscard]] auto begin() noexcept { return m_Value.begin(); }
+    [[nodiscard]] auto begin() const noexcept { return m_Value.begin(); }
+    [[nodiscard]] auto end() noexcept { return m_Value.end(); }
+    [[nodiscard]] auto end() const noexcept { return m_Value.end(); }
     [[nodiscard]] auto Begin() noexcept { return m_Value.begin(); }
     [[nodiscard]] auto Begin() const noexcept { return m_Value.begin(); }
     [[nodiscard]] auto End() noexcept { return m_Value.end(); }

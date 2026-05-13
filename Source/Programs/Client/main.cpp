@@ -1,7 +1,9 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "VoxCore/CoreMinimal.h"
 #include "VoxCore/GameFramework/UObject.h"
+#include "VoxCore/Platform/Window/VoxSDLWindow.h"
 #include "VoxCore/Reflection/UClass.h"
 #include "VoxEngine/FEngineContext.h"
 
@@ -23,18 +25,15 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    if (!localActorClass->SetValue(localActor.get(), "Name", FString("ClientActor"))) {
-        std::cerr << "Failed to set AActor.Name through reflection\n";
-        return EXIT_FAILURE;
-    }
 
-    const TOptional<FString> localActorName = localActorClass->InvokeAs<FString>(localActor.get(), "GetName");
-    if (!localActorName) {
-        std::cerr << "Failed to invoke AActor.GetName through reflection\n";
-        return EXIT_FAILURE;
-    }
 
     std::cout << "Class: " << localActor->GetClass()->ClassName << '\n';
-    std::cout << "Local Actor Name: " << *localActorName << '\n';
+
+
+    VoxCore::Platform::Window::VoxSDLWindow testWindow = VoxCore::Platform::Window::VoxSDLWindow();
+    testWindow.Create(1920, 1080, "Test Window");
+    while (1) {
+        testWindow.PollEvents();
+    }
     return EXIT_SUCCESS;
 }

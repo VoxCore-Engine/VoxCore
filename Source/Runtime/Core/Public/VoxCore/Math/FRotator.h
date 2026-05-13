@@ -1,18 +1,16 @@
-//
-// Created by IDKTHIS on 12.05.2026.
-//
-
 #pragma once
 
 #include <ostream>
 
-#include "FMath.h"
-#include "Vector.h"
+#include "VoxCore/Math/FMath.h"
+#include "VoxCore/Math/Vector.h"
+
+struct FQuat;
 
 struct FRotator {
-    FReal Pitch = 0.0f;
-    FReal Yaw = 0.0f;
-    FReal Roll = 0.0f;
+    FReal Pitch = 0.0;
+    FReal Yaw = 0.0;
+    FReal Roll = 0.0;
 
     constexpr FRotator() = default;
     constexpr FRotator(FReal pitch, FReal yaw, FReal roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {}
@@ -31,6 +29,10 @@ struct FRotator {
         return {Pitch * scalar, Yaw * scalar, Roll * scalar};
     }
 
+    FRotator& operator+=(const FRotator& rhs) noexcept { Pitch += rhs.Pitch; Yaw += rhs.Yaw; Roll += rhs.Roll; return *this; }
+    FRotator& operator-=(const FRotator& rhs) noexcept { Pitch -= rhs.Pitch; Yaw -= rhs.Yaw; Roll -= rhs.Roll; return *this; }
+    FRotator& operator*=(FReal scalar) noexcept { Pitch *= scalar; Yaw *= scalar; Roll *= scalar; return *this; }
+
     FRotator& Normalize() noexcept {
         Pitch = FMath::NormalizeAxis(Pitch);
         Yaw = FMath::NormalizeAxis(Yaw);
@@ -43,10 +45,21 @@ struct FRotator {
         return copy.Normalize();
     }
 
+    [[nodiscard]] FRotator GetDenormalized() const noexcept {
+        return {
+            FMath::ClampAxis(Pitch),
+            FMath::ClampAxis(Yaw),
+            FMath::ClampAxis(Roll)};
+    }
+
     [[nodiscard]] bool IsNearlyZero(FReal tolerance = FMath::KindaSmallNumber) const noexcept {
         return FMath::IsNearlyZero(Pitch, tolerance)
             && FMath::IsNearlyZero(Yaw, tolerance)
             && FMath::IsNearlyZero(Roll, tolerance);
+    }
+
+    [[nodiscard]] bool Equals(const FRotator& rhs, FReal tolerance = FMath::KindaSmallNumber) const noexcept {
+        return GetNormalized().Euler().Equals(rhs.GetNormalized().Euler(), tolerance);
     }
 
     [[nodiscard]] FVector Euler() const noexcept { return {Pitch, Yaw, Roll}; }
@@ -60,6 +73,8 @@ struct FRotator {
             cosPitch * FMath::Sin(yawRadians),
             FMath::Sin(pitchRadians)};
     }
+
+    [[nodiscard]] FQuat Quaternion() const noexcept;
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const FRotator& value) {

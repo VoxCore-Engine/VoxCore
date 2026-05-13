@@ -7,14 +7,12 @@
 #include <typeinfo>
 #include <utility>
 
-#include "VoxCore/Core/Types/FString.h"
-#include "VoxCore/Core/Types/TArray.h"
+#include "VoxCore/CoreMinimal.h"
 #include "VoxCore/GameFramework/UObject.h"
-#include "VoxCore/Memory/Pointers.h"
 #include "VoxCore/Reflection/Flags.h"
 #include "VoxCore/Reflection/Info.h"
 
-namespace VoxCore::Reflection::Core {
+namespace VoxCore::Private::Reflection {
     template <typename T>
     using TDecay = std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -48,6 +46,24 @@ namespace VoxCore::Reflection::Core {
             return "double";
         } else if constexpr (std::is_same_v<Type, FString>) {
             return "FString";
+        } else if constexpr (std::is_same_v<Type, FName>) {
+            return "FName";
+        } else if constexpr (std::is_same_v<Type, FText>) {
+            return "FText";
+        } else if constexpr (std::is_same_v<Type, FVector2D>) {
+            return "FVector2D";
+        } else if constexpr (std::is_same_v<Type, FVector>) {
+            return "FVector";
+        } else if constexpr (std::is_same_v<Type, FVector4>) {
+            return "FVector4";
+        } else if constexpr (std::is_same_v<Type, FRotator>) {
+            return "FRotator";
+        } else if constexpr (std::is_same_v<Type, FQuat>) {
+            return "FQuat";
+        } else if constexpr (std::is_same_v<Type, FTransform>) {
+            return "FTransform";
+        } else if constexpr (std::is_same_v<Type, FMatrix>) {
+            return "FMatrix";
         } else if constexpr (std::is_same_v<Type, std::string>) {
             return "std::string";
         } else {
@@ -213,5 +229,49 @@ namespace VoxCore::Reflection::Core {
             }
         };
         return info;
+    }
+}
+
+namespace VoxCore::Reflection::Core {
+    template <typename T>
+    using TDecay = ::VoxCore::Private::Reflection::TDecay<T>;
+
+    template <auto Member>
+    using TMemberObjectTraits = ::VoxCore::Private::Reflection::TMemberObjectTraits<Member>;
+
+    template <typename T>
+    [[nodiscard]] inline FString GetTypeName() {
+        return ::VoxCore::Private::Reflection::GetTypeName<T>();
+    }
+
+    template <typename T>
+    [[nodiscard]] inline TOptional<TDecay<T>> CastAnyValue(const std::any& value) {
+        return ::VoxCore::Private::Reflection::CastAnyValue<T>(value);
+    }
+
+    template <auto Member>
+    [[nodiscard]] inline FPropertyInfo MakePropertyInfo(const char* name, FPropertyFlags flags) {
+        return ::VoxCore::Private::Reflection::MakePropertyInfo<Member>(name, flags);
+    }
+
+    template <typename>
+    struct TMemberFunctionTraits;
+
+    template <typename Signature>
+    struct TMemberFunctionTraits : ::VoxCore::Private::Reflection::TMemberFunctionTraits<Signature> {};
+
+    template <typename Tuple, SIZE_T... Indices>
+    [[nodiscard]] inline TArray<FString> MakeParameterTypeNames(std::index_sequence<Indices...> indices) {
+        return ::VoxCore::Private::Reflection::MakeParameterTypeNames<Tuple>(indices);
+    }
+
+    template <typename ReturnType, typename ObjectType, auto Method, typename Tuple, SIZE_T... Indices>
+    [[nodiscard]] inline TOptional<std::any> InvokeMethod(ObjectType& object, TSpan<std::any> args, std::index_sequence<Indices...> indices) {
+        return ::VoxCore::Private::Reflection::InvokeMethod<ReturnType, ObjectType, Method, Tuple>(object, args, indices);
+    }
+
+    template <auto Method>
+    [[nodiscard]] inline FFunctionInfo MakeFunctionInfo(const char* name, FFunctionFlags flags) {
+        return ::VoxCore::Private::Reflection::MakeFunctionInfo<Method>(name, flags);
     }
 }

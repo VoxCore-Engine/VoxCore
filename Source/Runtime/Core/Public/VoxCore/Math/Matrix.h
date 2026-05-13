@@ -1,8 +1,5 @@
-//
-// Created by IDKTHIS on 12.05.2026.
-//
-
 #pragma once
+
 #include <array>
 #include <initializer_list>
 #include <ostream>
@@ -10,18 +7,14 @@
 #include <utility>
 
 #include "VoxCore/Core/Types/Common.h"
+#include "VoxCore/Math/FQuat.h"
 #include "VoxCore/Math/Vector.h"
 
-
 template <typename T, SIZE_T Rows, SIZE_T Cols>
-class TMatrixStorage {
+class TMatrix {
 public:
-    std::array<T, Rows * Cols> Data{};
-};
+    static_assert(Rows > 0 && Cols > 0);
 
-template <typename T, SIZE_T Rows, SIZE_T Cols>
-class TMatrix : public TMatrixStorage<T, Rows, Cols> {
-public:
     using ValueType = T;
     static constexpr SIZE_T RowCount = Rows;
     static constexpr SIZE_T ColumnCount = Cols;
@@ -30,18 +23,19 @@ public:
 
     struct FRowProxy {
         T* RowData = nullptr;
+
         [[nodiscard]] T& operator[](SIZE_T column) noexcept { return RowData[column]; }
         [[nodiscard]] const T& operator[](SIZE_T column) const noexcept { return RowData[column]; }
     };
 
     struct FConstRowProxy {
         const T* RowData = nullptr;
+
         [[nodiscard]] const T& operator[](SIZE_T column) const noexcept { return RowData[column]; }
     };
 
     constexpr TMatrix() = default;
-    explicit constexpr TMatrix(const std::array<T, ElementCount>& values)
-        : TMatrixStorage<T, Rows, Cols>{values} {}
+    explicit constexpr TMatrix(const std::array<T, ElementCount>& values) : Data(values) {}
 
     constexpr TMatrix(std::initializer_list<std::initializer_list<T>> rows) {
         SIZE_T rowIndex = 0;
@@ -75,24 +69,74 @@ public:
         return matrix;
     }
 
+    [[nodiscard]] static constexpr TMatrix MakeTranslation(const TVector3<T>& translation) noexcept
+        requires (Rows == 4 && Cols == 4) {
+        TMatrix matrix = Identity();
+        matrix(0, 3) = translation.X;
+        matrix(1, 3) = translation.Y;
+        matrix(2, 3) = translation.Z;
+        return matrix;
+    }
+
+    [[nodiscard]] static constexpr TMatrix MakeScale(const TVector3<T>& scale) noexcept
+        requires (Rows == 4 && Cols == 4) {
+        TMatrix matrix = Identity();
+        matrix(0, 0) = scale.X;
+        matrix(1, 1) = scale.Y;
+        matrix(2, 2) = scale.Z;
+        return matrix;
+    }
+
+    [[nodiscard]] static TMatrix MakeRotation(const FQuat& rotation) noexcept
+        requires (Rows == 4 && Cols == 4 && std::is_floating_point_v<T>) {
+        const FQuat normalized = rotation.GetNormalized();
+
+        const T xx = static_cast<T>(normalized.X * normalized.X);
+        const T yy = static_cast<T>(normalized.Y * normalized.Y);
+        const T zz = static_cast<T>(normalized.Z * normalized.Z);
+        const T xy = static_cast<T>(normalized.X * normalized.Y);
+        const T xz = static_cast<T>(normalized.X * normalized.Z);
+        const T yz = static_cast<T>(normalized.Y * normalized.Z);
+        const T wx = static_cast<T>(normalized.W * normalized.X);
+        const T wy = static_cast<T>(normalized.W * normalized.Y);
+        const T wz = static_cast<T>(normalized.W * normalized.Z);
+
+        TMatrix matrix = Identity();
+        matrix(0, 0) = T(1) - T(2) * (yy + zz);
+        matrix(0, 1) = T(2) * (xy - wz);
+        matrix(0, 2) = T(2) * (xz + wy);
+        matrix(1, 0) = T(2) * (xy + wz);
+        matrix(1, 1) = T(1) - T(2) * (xx + zz);
+        matrix(1, 2) = T(2) * (yz - wx);
+        matrix(2, 0) = T(2) * (xz - wy);
+        matrix(2, 1) = T(2) * (yz + wx);
+        matrix(2, 2) = T(1) - T(2) * (xx + yy);
+        return matrix;
+    }
+
+    [[nodiscard]] static TMatrix MakeRotation(const FRotator& rotation) noexcept
+        requires (Rows == 4 && Cols == 4 && std::is_floating_point_v<T>) {
+        return MakeRotation(FQuat::MakeFromRotator(rotation));
+    }
+
     [[nodiscard]] constexpr T& operator()(SIZE_T row, SIZE_T column) noexcept {
-        return this->Data[(row * Cols) + column];
+        return Data[(row * Cols) + column];
     }
 
     [[nodiscard]] constexpr const T& operator()(SIZE_T row, SIZE_T column) const noexcept {
-        return this->Data[(row * Cols) + column];
+        return Data[(row * Cols) + column];
     }
 
     [[nodiscard]] constexpr FRowProxy operator[](SIZE_T row) noexcept {
-        return FRowProxy{this->Data.data() + (row * Cols)};
+        return FRowProxy{Data.data() + (row * Cols)};
     }
 
     [[nodiscard]] constexpr FConstRowProxy operator[](SIZE_T row) const noexcept {
-        return FConstRowProxy{this->Data.data() + (row * Cols)};
+        return FConstRowProxy{Data.data() + (row * Cols)};
     }
 
-    [[nodiscard]] constexpr T* GetData() noexcept { return this->Data.data(); }
-    [[nodiscard]] constexpr const T* GetData() const noexcept { return this->Data.data(); }
+    [[nodiscard]] constexpr T* GetData() noexcept { return Data.data(); }
+    [[nodiscard]] constexpr const T* GetData() const noexcept { return Data.data(); }
 
     [[nodiscard]] constexpr std::array<T, Cols> GetRow(SIZE_T row) const noexcept {
         std::array<T, Cols> result{};
@@ -122,10 +166,20 @@ public:
         }
     }
 
+    [[nodiscard]] constexpr TVector3<T> GetOrigin() const noexcept requires (Rows >= 3 && Cols == 4) {
+        return {(*this)(0, 3), (*this)(1, 3), (*this)(2, 3)};
+    }
+
+    constexpr void SetOrigin(const TVector3<T>& origin) noexcept requires (Rows >= 3 && Cols == 4) {
+        (*this)(0, 3) = origin.X;
+        (*this)(1, 3) = origin.Y;
+        (*this)(2, 3) = origin.Z;
+    }
+
     [[nodiscard]] constexpr TMatrix operator+(const TMatrix& rhs) const noexcept {
         TMatrix result;
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            result.GetData()[index] = this->Data[index] + rhs.GetData()[index];
+            result.Data[index] = Data[index] + rhs.Data[index];
         }
         return result;
     }
@@ -133,7 +187,7 @@ public:
     [[nodiscard]] constexpr TMatrix operator-(const TMatrix& rhs) const noexcept {
         TMatrix result;
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            result.GetData()[index] = this->Data[index] - rhs.GetData()[index];
+            result.Data[index] = Data[index] - rhs.Data[index];
         }
         return result;
     }
@@ -141,7 +195,7 @@ public:
     [[nodiscard]] constexpr TMatrix operator*(T scalar) const noexcept {
         TMatrix result;
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            result.GetData()[index] = this->Data[index] * scalar;
+            result.Data[index] = Data[index] * scalar;
         }
         return result;
     }
@@ -149,7 +203,7 @@ public:
     [[nodiscard]] constexpr TMatrix operator/(T scalar) const noexcept {
         TMatrix result;
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            result.GetData()[index] = this->Data[index] / scalar;
+            result.Data[index] = Data[index] / scalar;
         }
         return result;
     }
@@ -157,77 +211,67 @@ public:
     [[nodiscard]] constexpr TMatrix HadamardProduct(const TMatrix& rhs) const noexcept {
         TMatrix result;
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            result.GetData()[index] = this->Data[index] * rhs.GetData()[index];
+            result.Data[index] = Data[index] * rhs.Data[index];
         }
         return result;
     }
 
     TMatrix& operator+=(const TMatrix& rhs) noexcept {
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            this->Data[index] += rhs.GetData()[index];
+            Data[index] += rhs.Data[index];
         }
         return *this;
     }
 
     TMatrix& operator-=(const TMatrix& rhs) noexcept {
         for (SIZE_T index = 0; index < ElementCount; ++index) {
-            this->Data[index] -= rhs.GetData()[index];
+            Data[index] -= rhs.Data[index];
         }
         return *this;
     }
 
     TMatrix& operator*=(T scalar) noexcept {
-        for (T& value : this->Data) {
+        for (T& value : Data) {
             value *= scalar;
         }
         return *this;
     }
 
     template <SIZE_T OtherCols>
-    [[nodiscard]] TMatrix<T, Rows, OtherCols> operator*(const TMatrix<T, Cols, OtherCols>& rhs) const noexcept {
-        if constexpr (std::is_same_v<T, FReal> && Rows == 4 && Cols == 4 && OtherCols == 4) {
-            TMatrix<T, Rows, OtherCols> result;
-            core::math::intrinsics::MultiplyMatrix4x4(this->GetData(), rhs.GetData(), result.GetData());
-            return result;
-        } else {
-            TMatrix<T, Rows, OtherCols> result;
-            for (SIZE_T row = 0; row < Rows; ++row) {
-                for (SIZE_T column = 0; column < OtherCols; ++column) {
-                    T value = T(0);
-                    for (SIZE_T i = 0; i < Cols; ++i) {
-                        value += (*this)(row, i) * rhs(i, column);
-                    }
-                    result(row, column) = value;
+    [[nodiscard]] constexpr TMatrix<T, Rows, OtherCols> operator*(const TMatrix<T, Cols, OtherCols>& rhs) const noexcept {
+        TMatrix<T, Rows, OtherCols> result;
+        for (SIZE_T row = 0; row < Rows; ++row) {
+            for (SIZE_T column = 0; column < OtherCols; ++column) {
+                T value = T(0);
+                for (SIZE_T index = 0; index < Cols; ++index) {
+                    value += (*this)(row, index) * rhs(index, column);
                 }
-            }
-            return result;
-        }
-    }
-
-    [[nodiscard]] TVector4<T> operator*(const TVector4<T>& rhs) const noexcept requires (Cols == 4) {
-        TVector4<T> result{};
-        const T vector[4] = {rhs.X, rhs.Y, rhs.Z, rhs.W};
-        T output[4] = {};
-        for (SIZE_T row = 0; row < Rows && row < 4; ++row) {
-            for (SIZE_T column = 0; column < 4; ++column) {
-                output[row] += (*this)(row, column) * vector[column];
+                result(row, column) = value;
             }
         }
-        if constexpr (Rows > 0) result.X = output[0];
-        if constexpr (Rows > 1) result.Y = output[1];
-        if constexpr (Rows > 2) result.Z = output[2];
-        if constexpr (Rows > 3) result.W = output[3];
         return result;
     }
 
-    [[nodiscard]] TVector3<T> operator*(const TVector3<T>& rhs) const noexcept requires (Rows == 3 && Cols == 3) {
+    [[nodiscard]] constexpr TVector4<T> operator*(const TVector4<T>& rhs) const noexcept requires (Cols == 4) {
+        TVector4<T> result{};
+        for (SIZE_T row = 0; row < Rows && row < 4; ++row) {
+            result[row] =
+                ((*this)(row, 0) * rhs.X) +
+                ((*this)(row, 1) * rhs.Y) +
+                ((*this)(row, 2) * rhs.Z) +
+                ((*this)(row, 3) * rhs.W);
+        }
+        return result;
+    }
+
+    [[nodiscard]] constexpr TVector3<T> operator*(const TVector3<T>& rhs) const noexcept requires (Rows == 3 && Cols == 3) {
         return {
             ((*this)(0, 0) * rhs.X) + ((*this)(0, 1) * rhs.Y) + ((*this)(0, 2) * rhs.Z),
             ((*this)(1, 0) * rhs.X) + ((*this)(1, 1) * rhs.Y) + ((*this)(1, 2) * rhs.Z),
             ((*this)(2, 0) * rhs.X) + ((*this)(2, 1) * rhs.Y) + ((*this)(2, 2) * rhs.Z)};
     }
 
-    [[nodiscard]] TMatrix<T, Cols, Rows> Transpose() const noexcept {
+    [[nodiscard]] constexpr TMatrix<T, Cols, Rows> Transpose() const noexcept {
         TMatrix<T, Cols, Rows> result;
         for (SIZE_T row = 0; row < Rows; ++row) {
             for (SIZE_T column = 0; column < Cols; ++column) {
@@ -237,7 +281,7 @@ public:
         return result;
     }
 
-    [[nodiscard]] T Trace() const noexcept requires (IsSquare) {
+    [[nodiscard]] constexpr T Trace() const noexcept requires (IsSquare) {
         T result = T(0);
         for (SIZE_T index = 0; index < Rows; ++index) {
             result += (*this)(index, index);
@@ -343,37 +387,26 @@ public:
         return right;
     }
 
-    [[nodiscard]] TVector3<T> TransformPosition(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols == 4) {
-        if constexpr (std::is_same_v<T, FReal> && Rows == 4) {
-            const FReal input[3] = {value.X, value.Y, value.Z};
-            FReal output[3] = {};
-            core::math::intrinsics::TransformPosition4x4(this->GetData(), input, output);
-            return {output[0], output[1], output[2]};
-        } else {
-            return {
-                ((*this)(0, 0) * value.X) + ((*this)(0, 1) * value.Y) + ((*this)(0, 2) * value.Z) + (*this)(0, 3),
-                ((*this)(1, 0) * value.X) + ((*this)(1, 1) * value.Y) + ((*this)(1, 2) * value.Z) + (*this)(1, 3),
-                ((*this)(2, 0) * value.X) + ((*this)(2, 1) * value.Y) + ((*this)(2, 2) * value.Z) + (*this)(2, 3)};
-        }
+    [[nodiscard]] constexpr TVector3<T> TransformPosition(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols == 4) {
+        return {
+            ((*this)(0, 0) * value.X) + ((*this)(0, 1) * value.Y) + ((*this)(0, 2) * value.Z) + (*this)(0, 3),
+            ((*this)(1, 0) * value.X) + ((*this)(1, 1) * value.Y) + ((*this)(1, 2) * value.Z) + (*this)(1, 3),
+            ((*this)(2, 0) * value.X) + ((*this)(2, 1) * value.Y) + ((*this)(2, 2) * value.Z) + (*this)(2, 3)};
     }
 
-    [[nodiscard]] TVector3<T> TransformPoint(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols == 4) {
+    [[nodiscard]] constexpr TVector3<T> TransformPoint(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols == 4) {
         return TransformPosition(value);
     }
 
-    [[nodiscard]] TVector3<T> TransformVector(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols >= 3) {
-        if constexpr (std::is_same_v<T, FReal> && Rows == 4 && Cols == 4) {
-            const FReal input[3] = {value.X, value.Y, value.Z};
-            FReal output[3] = {};
-            core::math::intrinsics::TransformVector4x4(this->GetData(), input, output);
-            return {output[0], output[1], output[2]};
-        } else {
-            return {
-                ((*this)(0, 0) * value.X) + ((*this)(0, 1) * value.Y) + ((*this)(0, 2) * value.Z),
-                ((*this)(1, 0) * value.X) + ((*this)(1, 1) * value.Y) + ((*this)(1, 2) * value.Z),
-                ((*this)(2, 0) * value.X) + ((*this)(2, 1) * value.Y) + ((*this)(2, 2) * value.Z)};
-        }
+    [[nodiscard]] constexpr TVector3<T> TransformVector(const TVector3<T>& value) const noexcept requires (Rows >= 3 && Cols >= 3) {
+        return {
+            ((*this)(0, 0) * value.X) + ((*this)(0, 1) * value.Y) + ((*this)(0, 2) * value.Z),
+            ((*this)(1, 0) * value.X) + ((*this)(1, 1) * value.Y) + ((*this)(1, 2) * value.Z),
+            ((*this)(2, 0) * value.X) + ((*this)(2, 1) * value.Y) + ((*this)(2, 2) * value.Z)};
     }
+
+private:
+    std::array<T, ElementCount> Data{};
 };
 
 template <typename T, SIZE_T Rows, SIZE_T Cols>
@@ -396,8 +429,10 @@ inline std::ostream& operator<<(std::ostream& stream, const TMatrix<T, Rows, Col
     return stream;
 }
 
-template <SIZE_T Rows, SIZE_T Cols, typename T = FReal>
-using FMatrix = TMatrix<T, Rows, Cols>;
+using FMatrix3x3 = TMatrix<FReal, 3, 3>;
+using FMatrix44f = TMatrix<float32, 4, 4>;
+using FMatrix44d = TMatrix<FReal, 4, 4>;
+using FMatrix = FMatrix44d;
 
 template <typename T, SIZE_T Rows, SIZE_T Cols>
 [[nodiscard]] constexpr TMatrix<T, Rows, Cols> operator*(T scalar, const TMatrix<T, Rows, Cols>& matrix) noexcept {

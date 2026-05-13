@@ -612,7 +612,7 @@ void AppendPropertyInitializers(std::ostringstream& output, const FClassDeclarat
     output << "    outClass.Properties = {\n";
     for (std::size_t index = 0; index < declaration.Properties.size(); ++index) {
         const auto& property = declaration.Properties[index];
-        output << "        VoxCore::Reflection::Core::MakePropertyInfo<&" << declaration.Name << "::" << property.Name << ">(\"" << property.Name << "\", " << property.Flags << ")";
+        output << "        VoxCore::Private::Reflection::MakePropertyInfo<&" << declaration.Name << "::" << property.Name << ">(\"" << property.Name << "\", " << property.Flags << ")";
         output << (index + 1 < declaration.Properties.size() ? ",\n" : "\n");
     }
     output << "    };\n";
@@ -627,7 +627,7 @@ void AppendFunctionInitializers(std::ostringstream& output, const FClassDeclarat
     output << "    outClass.Functions = {\n";
     for (std::size_t index = 0; index < declaration.Functions.size(); ++index) {
         const auto& function = declaration.Functions[index];
-        output << "        VoxCore::Reflection::Core::MakeFunctionInfo<&" << declaration.Name << "::" << function.Name << ">(\"" << function.Name << "\", " << function.Flags << ")";
+        output << "        VoxCore::Private::Reflection::MakeFunctionInfo<&" << declaration.Name << "::" << function.Name << ">(\"" << function.Name << "\", " << function.Flags << ")";
         output << (index + 1 < declaration.Functions.size() ? ",\n" : "\n");
     }
     output << "    };\n";

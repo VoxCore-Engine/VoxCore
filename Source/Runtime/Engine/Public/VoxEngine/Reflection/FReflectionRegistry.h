@@ -1,8 +1,6 @@
 #pragma once
 
-#include "VoxCore/Core/Types/FString.h"
-#include "VoxCore/Core/Types/TArray.h"
-#include "VoxCore/Core/Types/TMap.h"
+#include "VoxCore/CoreMinimal.h"
 #include "VoxCore/Reflection/IReflectionRegistry.h"
 
 class UClass;

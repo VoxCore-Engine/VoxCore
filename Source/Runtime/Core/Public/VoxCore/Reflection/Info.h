@@ -1,17 +1,11 @@
-//
-// Created by IDKTHIS on 10.05.2026.
-//
-
 #pragma once
+
 #include <any>
 #include <functional>
 #include <typeindex>
 
-#include "Flags.h"
-#include "VoxCore/Core/Types/Common.h"
-#include "VoxCore/Core/Types/FString.h"
-#include "VoxCore/Core/Types/TArray.h"
-
+#include "VoxCore/CoreMinimal.h"
+#include "VoxCore/Reflection/Flags.h"
 
 class UObject;
 

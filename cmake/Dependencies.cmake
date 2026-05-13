@@ -1,20 +1,13 @@
-
+include(cmake/CPM.cmake)
 message(STATUS "[VoxCore] Fetching dependencies via CPM...")
 
 CPMAddPackage(
-    NAME spdlog
-    GITHUB_REPOSITORY gabime/spdlog
-    VERSION 1.14.1
-    OPTIONS "SPDLOG_BUILD_EXAMPLES OFF" "SPDLOG_BUILD_TESTS OFF"
+        NAME spdlog
+        GITHUB_REPOSITORY gabime/spdlog
+        VERSION 1.14.1
+        OPTIONS "SPDLOG_BUILD_EXAMPLES OFF" "SPDLOG_BUILD_TESTS OFF"
 )
 
-CPMAddPackage(
-    NAME glm
-    GITHUB_REPOSITORY g-truc/glm
-    GIT_TAG 1.0.1
-    OPTIONS "GLM_BUILD_TESTS OFF"
-)
-add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 CPMAddPackage(
     NAME nlohmann_json
     GITHUB_REPOSITORY nlohmann/json
@@ -42,15 +35,6 @@ CPMAddPackage(
         OPTIONS "INSTALL_GTEST OFF" "BUILD_GMOCK ON"
 )
 if(VOXCORE_BUILD_CLIENT)
-    CPMAddPackage(
-        NAME SDL3
-        GITHUB_REPOSITORY libsdl-org/SDL
-        GIT_TAG release-3.2.14
-        OPTIONS
-            "SDL_SHARED OFF"
-            "SDL_STATIC ON"
-            "SDL_TEST_LIBRARY OFF"
-    )
     CPMAddPackage(
         NAME VulkanHeaders
         GITHUB_REPOSITORY KhronosGroup/Vulkan-Headers

@@ -15,7 +15,6 @@ target_include_directories(Module.Core
 target_link_libraries(Module.Core
     PUBLIC
         spdlog::spdlog
-        glm::glm
         nlohmann_json::nlohmann_json
 )
 

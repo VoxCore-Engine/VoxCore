@@ -1,8 +1,9 @@
 #pragma once
+
 #include <functional>
 #include <unordered_map>
 
-#include "Common.h"
+#include "VoxCore/Core/Types/Common.h"
 
 template <
     typename KeyType,

@@ -1,9 +1,6 @@
-//
-// Created by IDKTHIS on 10.05.2026.
-//
-
 #pragma once
-#include "VoxCore/Core/Types/Common.h"
+
+#include "VoxCore/CoreMinimal.h"
 
 using FFunctionFlags = uint32;
 using FPropertyFlags = uint32;

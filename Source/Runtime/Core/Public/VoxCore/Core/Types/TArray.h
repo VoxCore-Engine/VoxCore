@@ -1,12 +1,9 @@
-//
-// Created by IDKTHIS on 10.05.2026.
-//
-
 #pragma once
+
+#include <initializer_list>
 #include <vector>
 
-#include "Common.h"
-
+#include "VoxCore/Core/Types/Common.h"
 
 template <typename T, typename Allocator = std::allocator<T>>
 class TArray {
