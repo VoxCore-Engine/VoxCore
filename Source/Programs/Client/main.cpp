@@ -9,9 +9,31 @@
 
 #include "VoxelClient/ModuleRegistration.h"
 
+VOX_DECLARE_CVAR_RANGE(
+    GClientTestCVar,
+    "client.test",
+    1.1f,
+    0.0f,
+    10.0f,
+    "Small test CVar that demonstrates declaration, reads, writes and subscriptions.",
+    ECVarFlags::Archive | ECVarFlags::ConsoleEditable);
+
 int main(int argc, char** argv) {
     FEngineContext context;
     RegisterVoxelClientTypes(context.GetReflectionRegistry());
+    FCVarManager& cvars = context.GetCVarManager();
+
+    FCVarSubscription testSubscription = cvars.SubscribeTyped<float32>(
+        GClientTestCVar,
+        [](float32 oldValue, float32 newValue) {
+            std::cout << "[CVar] client.test changed: " << oldValue << " -> " << newValue << '\n';
+        });
+
+    std::cout << "[CVar] initial " << GClientTestCVar.GetName() << " = "
+              << cvars.GetValueOr<float32>(GClientTestCVar, 0.0f) << '\n';
+
+    cvars.SetValue(GClientTestCVar, 2.5f);
+    cvars.SetFromString(GClientTestCVar.GetName().View(), "3.75", ECVarSetSource::Console);
 
     const UClass* localActorClass = context.GetReflectionRegistry().FindClass("AActor");
     if (localActorClass == nullptr) {
@@ -28,12 +50,15 @@ int main(int argc, char** argv) {
 
 
     std::cout << "Class: " << localActor->GetClass()->ClassName << '\n';
+    for (const auto& cvar : cvars.GetAllVariables()) {
+        std::visit([cvar](auto&& Arg) {
+            std::cout << cvar.Name << ": " << Arg << '\n';
+        }, cvar.Value);
+    }
 
 
     VoxCore::Platform::Window::VoxSDLWindow testWindow = VoxCore::Platform::Window::VoxSDLWindow();
     testWindow.Create(1920, 1080, "Test Window");
-    while (1) {
-        testWindow.PollEvents();
-    }
+
     return EXIT_SUCCESS;
 }
