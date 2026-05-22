@@ -45,6 +45,7 @@ add_subdirectory(Source/Runtime/Network)
 if(VOXCORE_BUILD_CLIENT)
     add_subdirectory(Source/Runtime/Platform)
     add_subdirectory(Source/Runtime/Renderer)
+    add_subdirectory(Source/Game)
 endif()
 
 if(VOXCORE_BUILD_EDITOR)

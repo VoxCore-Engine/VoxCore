@@ -9,13 +9,13 @@ add_executable(VoxelClient
 )
 
 set_target_properties(VoxelClient PROPERTIES
-    OUTPUT_NAME "VoxClientRuntime"
+    OUTPUT_NAME "VoxCraftRuntime"
 )
 
 add_executable(VoxClientLauncher launcher_main.cpp)
 
 set_target_properties(VoxClientLauncher PROPERTIES
-    OUTPUT_NAME "VoxClient"
+    OUTPUT_NAME "VoxCraft"
 )
 
 if(MINGW)
@@ -36,6 +36,7 @@ target_link_libraries(VoxelClient PRIVATE
     VoxCore::Network
     VoxCore::Platform
     VoxCore::Renderer
+    VoxProject::VoxCraft
 )
 
 voxcore_enable_reflection(
@@ -77,10 +78,10 @@ add_custom_command(TARGET VoxelClient POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${VOXCORE_CLIENT_DIST_DIR}/bin"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:VoxClientLauncher>"
-        "${VOXCORE_CLIENT_DIST_DIR}/VoxClient.exe"
+        "${VOXCORE_CLIENT_DIST_DIR}/VoxCraft.exe"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:VoxelClient>"
-        "${VOXCORE_CLIENT_DIST_DIR}/bin/VoxClientRuntime.exe"
+        "${VOXCORE_CLIENT_DIST_DIR}/bin/VoxCraftRuntime.exe"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:VoxHeaderToolLauncher>"
         "${VOXCORE_CLIENT_DIST_DIR}/Tools/VoxHeaderTool.exe"
@@ -92,5 +93,5 @@ add_custom_command(TARGET VoxelClient POST_BUILD
         "${VOXCORE_CLIENT_DIST_DIR}/Content"
     ${VOXCORE_MINGW_RUNTIME_COPY_COMMAND}
     COMMAND_EXPAND_LISTS
-    COMMENT "Staging VoxClient distribution layout"
+    COMMENT "Staging VoxCraft distribution layout"
 )

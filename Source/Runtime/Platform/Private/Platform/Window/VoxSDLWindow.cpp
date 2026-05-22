@@ -5,6 +5,7 @@
 #include "VoxCore/Platform/Window/VoxSDLWindow.h"
 #include <SDL3/SDL.h>
 
+
 using namespace VoxCore::Platform::Window;
 
 VoxSDLWindow::~VoxSDLWindow() {

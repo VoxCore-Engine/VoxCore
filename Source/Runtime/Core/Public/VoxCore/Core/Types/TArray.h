@@ -1,11 +1,12 @@
 #pragma once
 
-#include <initializer_list>
+
 #include <vector>
 
 #include "VoxCore/Core/Types/Common.h"
+#include "VoxCore/Memory/Allocator.h"
 
-template <typename T, typename Allocator = std::allocator<T>>
+template <typename T, typename Allocator = VoxCore::Memory::TAllocator<T>>
 class TArray {
 public:
     using ElementType = T;
@@ -15,6 +16,7 @@ public:
     using ConstIterator = typename StorageType::const_iterator;
 
     TArray() = default;
+
     TArray(std::initializer_list<T> values) : Items(values) {}
 
     [[nodiscard]] bool IsEmpty() const noexcept { return Items.empty(); }

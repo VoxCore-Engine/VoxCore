@@ -23,5 +23,6 @@ target_include_directories(Module.Platform
 target_link_libraries(Module.Platform
     PUBLIC
         VoxCore::Core
+        VoxCore::Engine
         SDL3::SDL3-static
 )

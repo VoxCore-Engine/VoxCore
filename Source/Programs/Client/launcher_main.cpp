@@ -49,7 +49,7 @@ int LaunchClientRuntime() {
             runtimePath,
             kPathBufferSize,
             _TRUNCATE,
-            L"%s\\bin\\VoxClientRuntime.exe",
+            L"%s\\bin\\VoxCraftRuntime.exe",
             launcherPath) < 0) {
         return 1;
     }
